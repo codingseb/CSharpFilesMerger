@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace CSharpFilesMerger
 {
@@ -13,7 +10,7 @@ namespace CSharpFilesMerger
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        public static void Main()
+        public static void Main(string[] args)
         {
             List<string> ignoreFile = new List<string>()
             {
@@ -21,8 +18,10 @@ namespace CSharpFilesMerger
                 @"\\obj\\"
             };
 
+            string directory = args.Length > 0 ? args[0] : Directory.GetCurrentDirectory();
+
             List<CSharpFile> cSharpFiles = Directory
-                .GetFiles(@"C:\Projets\CSharpFilesMerger\CSharpFilesMerger", "*.cs", SearchOption.AllDirectories)
+                .GetFiles(directory, "*.cs", SearchOption.AllDirectories)
                 .Where(fileName => !ignoreFile.Any(pattern => Regex.IsMatch(fileName, pattern, RegexOptions.IgnoreCase)))
                 .Select(fileName => new CSharpFile(fileName))
                 .ToList();

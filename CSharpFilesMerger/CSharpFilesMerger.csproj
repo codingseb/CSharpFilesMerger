@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BlockParser.cs" />
     <Compile Include="CSharpFile.cs" />
     <Compile Include="Namespace.cs" />
     <Compile Include="Program.cs" />

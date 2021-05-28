@@ -1,36 +1,43 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Data;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace CSharpFilesMerger
 {
-    public class Namespace
+    public sealed class Namespace
     {
-        public string Name { get; }
-        public string Content { get; }
+        private static readonly Regex spacesRegex = new Regex(@"\s+", RegexOptions.Compiled);
+        private static readonly Regex namespaceRegex = new Regex(@"(^|\r|\n)(?<comment>(?m:(^(?>\s*)//.*$[\r\n])*))?(?>\s*)namespace(?>\s+)(?<namespace>[\p{L}_][\p{L}_0-9]*((?>\s*)\.(?>\s*)[\p{L}_][\p{L}_0-9]*)*)(?>\s*)\{", RegexOptions.Compiled);
 
-        public Namespace(string name, string content)
-        {
-            Name = name;
-            Content = content;
-            Load();
-        }
+        public string Comment { get; private set; }
+        public string Name { get; private set;  }
 
-        public void Load()
+        public List<TypeElement> Elements { get; private set; }
+
+        private Namespace()
+        {}
+
+        public static List<Namespace> Parse(ref string code)
         {
-            
+            var result = new List<Namespace>();
+            Match match;
+
+            while((match = namespaceRegex.Match(code)).Success)
+            {
+                int i = match.Index + match.Length;
+
+                string content = BlockParser.ParseBetweenImbricableBrackets(code, ref i);
+
+                result.Add(new Namespace
+                {
+                    Comment = match.Groups["comment"].Value.TrimStart('\r', '\n'),
+                    Name = spacesRegex.Replace(match.Groups["namespace"].Value, string.Empty),
+                    Elements = TypeElement.Parse(ref content)
+                });
+
+                code = code.Remove(match.Index, i - match.Index + 1);
+            }
+
+            return result;
         }
     }
 }
