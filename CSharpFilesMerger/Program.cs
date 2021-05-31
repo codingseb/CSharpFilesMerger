@@ -97,11 +97,23 @@ namespace CSharpFilesMerger
 
             #region Parse Files to Merge
 
-            cSharpFiles.ForEach(file =>
+/*            cSharpFiles.ForEach(file =>
             {
                 Console.WriteLine($"Parse file : \"{file.FileName}\"");
                 usings = usings.Union(file.Usings).ToList();
+            });*/
+            
+            cSharpFiles.ForEach(file =>
+            {
+                file.Namespaces.ForEach(ns =>
+                {
+                    MergedNamespace mergedNamespace = Namespaces.ContainsKey(ns.Name) ? Namespaces[ns.Name] : new MergedNamespace();
+
+
+                });
             });
+
+
 
             #endregion
 
