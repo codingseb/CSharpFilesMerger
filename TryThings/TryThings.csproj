@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B41BD429-46F1-405A-9101-C70ED86D2426}</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>CSharpFilesMerger</RootNamespace>
-    <AssemblyName>CSharpFilesMerger</AssemblyName>
+    <ProjectGuid>{405ADB97-B145-4C21-AE72-CECCFC93D4C9}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>TryThings</RootNamespace>
+    <AssemblyName>TryThings</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -31,9 +31,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -48,14 +45,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BlockParser.cs" />
-    <Compile Include="CSharpFile.cs" />
-    <Compile Include="MergedNamespace.cs" />
-    <Compile Include="MergedTypeElement.cs" />
-    <Compile Include="Namespace.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TypeElement.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

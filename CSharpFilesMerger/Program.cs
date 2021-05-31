@@ -24,6 +24,7 @@ namespace CSharpFilesMerger
             List<string> usings = new List<string>();
             IEnumerable<string> cSharpFileNames;
             List<CSharpFile> cSharpFiles;
+            Dictionary<string, MergedNamespace> Namespaces = new Dictionary<string, MergedNamespace>();
             string mergedFileContent = string.Empty;
 
             string directory = Directory.GetCurrentDirectory();
@@ -84,47 +85,81 @@ namespace CSharpFilesMerger
             #endregion
 
             #endregion
-            
+
             #region Get Files to Merge
 
             Console.WriteLine($"Search files in \"{directory}\"{(recurcive ? " recursively" : string.Empty)}");
 
+            Console.WriteLine(string.Empty);
+
             cSharpFiles = cSharpFileNames
-                .Select(fileName => new CSharpFile(fileName))
+                .Select(fileName =>
+                {
+                    Console.WriteLine($"Parse file : \"{fileName}\"");
+                    return new CSharpFile(fileName); })
                 .ToList();
 
             #endregion
 
-            #region Parse Files to Merge
+            #region Merge Files to Merged Structure
 
-/*            cSharpFiles.ForEach(file =>
-            {
-                Console.WriteLine($"Parse file : \"{file.FileName}\"");
-                usings = usings.Union(file.Usings).ToList();
-            });*/
-            
             cSharpFiles.ForEach(file =>
             {
+                Console.WriteLine(string.Empty);
+                Console.WriteLine($"Merge file : \"{file.FileName}\"");
+
                 file.Namespaces.ForEach(ns =>
                 {
-                    MergedNamespace mergedNamespace = Namespaces.ContainsKey(ns.Name) ? Namespaces[ns.Name] : new MergedNamespace();
+                    Console.WriteLine($"Merge namespace : \"{ns.Name}\"");
+                    MergedNamespace mergedNamespace = Namespaces.ContainsKey(ns.Name) ? Namespaces[ns.Name] : new MergedNamespace(){ Name = ns.Name };
 
+                    if(ns.Comment.Length > mergedNamespace.Comment.Length)
+                        mergedNamespace.Comment = ns.Comment;
 
+                    ns.Elements.ForEach(typeElement =>
+                    {
+                        Console.WriteLine($"Merge type : \"{typeElement.Name}\"");
+                        MergedTypeElement mergedTypeElement = mergedNamespace.Elements.ContainsKey(typeElement.Name) ? mergedNamespace.Elements[typeElement.Name] : new MergedTypeElement();
+
+                        if (typeElement.Comment.Length > mergedTypeElement.Comment.Length)
+                            mergedTypeElement.Comment = typeElement.Comment;
+
+                        if (typeElement.Declaration.Length > mergedTypeElement.Declaration.Length)
+                            mergedTypeElement.Declaration = typeElement.Declaration;
+
+                        mergedTypeElement.Content += typeElement.Content;
+
+                        mergedNamespace.Elements[typeElement.Name] = mergedTypeElement;
+                    });
+
+                    Namespaces[ns.Name] = mergedNamespace;
                 });
             });
 
-
-
             #endregion
 
-            #region Merge
+            #region Concatenate MergedStructure
 
-            mergedFileContent = string.Join("\r\n", usings.OrderBy(u => u).Select(u => $"using {u};")) + "\r\n\r\n" + mergedFileContent;
+            Console.WriteLine(string.Empty);
+            Console.WriteLine("Concatenate");
+
+            Namespaces.Values.ToList().ForEach(mergedNamespace =>
+            {
+                string content = string.Join("\r\n",
+                    mergedNamespace.Elements.Values.ToList()
+                        .Select(mergedTypeElement => $"{mergedTypeElement.Comment}\r\n{mergedTypeElement.Declaration}{mergedTypeElement.Content}}}"));
+
+                mergedFileContent += $"{mergedNamespace.Comment}\r\nnamespace {mergedNamespace.Name}\r\n{{{content}\r\n}}\r\n";
+            });
+
+            //mergedFileContent = string.Join("\r\n", usings.OrderBy(u => u).Select(u => $"using {u};")) + "\r\n\r\n" + mergedFileContent;
 
             #endregion
 
             #region Write Merged File
 
+            Console.WriteLine(string.Empty);
+            Console.WriteLine($"Write result in \"{outputFileName}\"");
             File.WriteAllText(outputFileName, mergedFileContent);
 
             #endregion
