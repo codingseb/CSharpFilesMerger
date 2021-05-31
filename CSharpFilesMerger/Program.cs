@@ -7,6 +7,9 @@ using System.Text.RegularExpressions;
 
 namespace CSharpFilesMerger
 {
+    /// <summary>
+    /// Entry class
+    /// </summary>
     internal static class Program
     {
         /// <summary>
@@ -39,7 +42,7 @@ namespace CSharpFilesMerger
 
             #region Working directory
 
-            if(args.Length > 0 && !args[0].StartsWith("-"))
+            if (args.Length > 0 && !args[0].StartsWith("-"))
             {
                 directory = Path.GetFullPath(Path.IsPathRooted(args[0]) ? args[0] : Path.Combine(directory, args[0]));
             }
@@ -88,7 +91,7 @@ namespace CSharpFilesMerger
 
             #endregion
 
-            #region Get Files to Merge
+            #region Parse files
 
             Console.WriteLine($"Search files in \"{directory}\"{(recurcive ? " recursively" : string.Empty)}");
 
@@ -98,16 +101,17 @@ namespace CSharpFilesMerger
                 .Select(fileName =>
                 {
                     Console.WriteLine($"Parse file : \"{fileName}\"");
-                    return new CSharpFile(fileName); })
+                    return new CSharpFile(fileName);
+                })
                 .ToList();
 
             #endregion
 
             #region Merge Files to Merged Structure
 
-            void MergeTypeElement(TypeElement typeElement, Dictionary<string,MergedTypeElement> mergedTypeElements, string context)
+            void MergeTypeElement(TypeElement typeElement, Dictionary<string, MergedTypeElement> mergedTypeElements, string context)
             {
-                Console.WriteLine($"Merge type : \"{typeElement.Name}\"{context}");
+                Console.WriteLine($"Merge type : \"{typeElement.Name}\" {context}");
                 MergedTypeElement mergedTypeElement = mergedTypeElements.ContainsKey(typeElement.Name) ? mergedTypeElements[typeElement.Name] : new MergedTypeElement();
 
                 if (typeElement.Comment.Length > mergedTypeElement.Comment.Length)
@@ -126,20 +130,22 @@ namespace CSharpFilesMerger
                 Console.WriteLine(string.Empty);
                 Console.WriteLine($"Merge file : \"{file.FileName}\"");
 
+                usings = usings.Union(file.Usings).ToList();
+
                 file.Namespaces.ForEach(ns =>
                 {
                     Console.WriteLine($"Merge namespace : \"{ns.Name}\"");
-                    MergedNamespace mergedNamespace = Namespaces.ContainsKey(ns.Name) ? Namespaces[ns.Name] : new MergedNamespace(){ Name = ns.Name };
+                    MergedNamespace mergedNamespace = Namespaces.ContainsKey(ns.Name) ? Namespaces[ns.Name] : new MergedNamespace() { Name = ns.Name };
 
-                    if(ns.Comment.Length > mergedNamespace.Comment.Length)
+                    if (ns.Comment.Length > mergedNamespace.Comment.Length)
                         mergedNamespace.Comment = ns.Comment;
 
-                    ns.Elements.ForEach(typeElement => MergeTypeElement(typeElement, mergedNamespace.Elements, $" of namespace \"{ns.Name}\""));
+                    ns.Elements.ForEach(typeElement => MergeTypeElement(typeElement, mergedNamespace.Elements, $"of namespace \"{ns.Name}\""));
 
                     Namespaces[ns.Name] = mergedNamespace;
                 });
 
-                file.Elements.ForEach(typeElement => MergeTypeElement(typeElement, typeElements, $" orphan element"));
+                file.Elements.ForEach(typeElement => MergeTypeElement(typeElement, typeElements, "orphan element"));
             });
 
             #endregion
@@ -149,20 +155,22 @@ namespace CSharpFilesMerger
             Console.WriteLine(string.Empty);
             Console.WriteLine("Concatenate");
 
+            mergedFileContent = string.Join("\r\n", usings.OrderBy(u => u).Select(u => $"using {u};")) + "\r\n\r\n";
+
             Namespaces.Values.ToList().ForEach(mergedNamespace =>
             {
-                string content = string.Join("\r\n",
+                string content = string.Join("\r\n\r\n",
                     mergedNamespace.Elements.Values.ToList()
-                        .Select(mergedTypeElement => $"{mergedTypeElement.Comment}\r\n{mergedTypeElement.Declaration}{mergedTypeElement.Content}}}"));
+                        .Select(mergedTypeElement => $"{mergedTypeElement.Comment}{mergedTypeElement.Declaration}{mergedTypeElement.Content}}}"));
 
-                mergedFileContent += $"{mergedNamespace.Comment}\r\nnamespace {mergedNamespace.Name}\r\n{{{content}\r\n}}\r\n";
+                mergedFileContent += $"{mergedNamespace.Comment}\r\nnamespace {mergedNamespace.Name}\r\n{{\r\n{content}\r\n}}\r\n\r\n".TrimStart('\r','\n');
             });
 
-            mergedFileContent += string.Join("\r\n",
+            mergedFileContent += string.Join("\r\n\r\n",
                     typeElements.Values.ToList()
-                        .Select(mergedTypeElement => $"{mergedTypeElement.Comment}\r\n{mergedTypeElement.Declaration}{mergedTypeElement.Content}}}"));
+                        .Select(mergedTypeElement => $"{mergedTypeElement.Comment}{mergedTypeElement.Declaration}{mergedTypeElement.Content}}}"));
 
-            //mergedFileContent = string.Join("\r\n", usings.OrderBy(u => u).Select(u => $"using {u};")) + "\r\n\r\n" + mergedFileContent;
+            mergedFileContent = mergedFileContent.Trim('\r', '\n');
 
             #endregion
 
@@ -174,19 +182,33 @@ namespace CSharpFilesMerger
 
             #endregion
 
+            #region What to do at the end
+
             int startIndex = args.ToList().IndexOf("-s");
 
             if (startIndex > -1 && startIndex < args.Length && !args[startIndex + 1].StartsWith("-"))
             {
+                Console.WriteLine(string.Empty);
+                Console.WriteLine($"start {args[startIndex + 1]} \"{outputFileName}\"");
                 Process.Start(args[startIndex + 1], $"\"{outputFileName}\"");
             }
             else
             {
+                Console.WriteLine(string.Empty);
+                Console.WriteLine($"start \"{outputFileName}\"");
                 Process.Start(outputFileName);
             }
 
             if (args.Contains("-w"))
+            {
+                Console.WriteLine(string.Empty);
+                Console.WriteLine("Press a key to exit...");
                 Console.ReadLine();
+            }
+
+            #endregion
         }
     }
 }
+
+// End

@@ -3,10 +3,12 @@ using System.Text.RegularExpressions;
 
 namespace CSharpFilesMerger
 {
+    /// <summary>
+    /// To parse type elements (class,enum, struct, interface) in one file
+    /// </summary>
     public class TypeElement
     {
         private static readonly Regex elementsRegex = new Regex(@"(?<=^|\r|\n)(?<comment>(?m:(^(?>\s*)//.*$[\r\n])*))?(?<declaration>(?>\s*)((?<modifiers>private|protected|internal|public|new|abstract|sealed|static|partial)(?>\s+))*((?<elementtype>class|struct|enum|interface)(?>\s+))(?<name>[\p{L}_][\p{L}_0-9]*)(?>\s*)(?<isgeneric>[<](?>([\p{L}_](?>[\p{L}_0-9]*)|(?>\s+)|[,\.])+|(?<gentag>[<])|(?<-gentag>[>]))*(?(gentag)(?!))[>](?>\s*))?(?<inherit>:(?>\s*)[\p{L}_][\p{L}_0-9]*(?>\s*)(,(?>\s*)[\p{L}_][\p{L}_0-9]*(?>\s*))*)?\{)", RegexOptions.Compiled);
-        private static readonly Regex partialRegex = new Regex(@"\spartial\s", RegexOptions.Compiled);
 
         public string Comment { get; private set; }
 
@@ -14,10 +16,13 @@ namespace CSharpFilesMerger
 
         public string Declaration { get; private set; }
 
-        public bool IsPartial => partialRegex.IsMatch(Declaration);
-
         public string Content { get; private set; }
 
+        /// <summary>
+        /// Parse and return all typeElements (class, struct, enum, interface) at the root level of the given code
+        /// </summary>
+        /// <param name="code">The code to parse</param>
+        /// <returns>The list of all found typeElements</returns>
         public static List<TypeElement> Parse(ref string code)
         {
             var result = new List<TypeElement>();

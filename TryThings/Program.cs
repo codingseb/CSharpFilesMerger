@@ -24,6 +24,8 @@ namespace TryThings.Process
 {
     using System.Collections.Generic;
 
+    public delegate void Hello();
+
     public class Processor
     {
         public int Add(int a, int b)

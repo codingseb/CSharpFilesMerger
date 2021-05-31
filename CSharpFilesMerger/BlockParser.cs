@@ -6,6 +6,9 @@ using System.Text.RegularExpressions;
 
 namespace CSharpFilesMerger
 {
+    /// <summary>
+    /// To Parse a block of code until it reach the corresponding ending curly bracket.
+    /// </summary>
     public static class BlockParser
     {
         private static readonly Regex stringBeginningRegex = new Regex("^(?<interpolated>[$])?(?<escaped>[@])?[\"]", RegexOptions.Compiled);
