@@ -18,7 +18,19 @@ namespace CSharpFilesMerger
                 @"\\obj\\"
             };
 
-            string directory = args.Length > 0 ? args[0] : Directory.GetCurrentDirectory();
+            string directory = Directory.GetCurrentDirectory();
+
+            if(args.Length > 0)
+            {
+                if(args[0].StartsWith("."))
+                {
+                    directory = Path.GetFullPath(Path.Combine(directory, args[0]));
+                }
+                else
+                {
+                    directory = args[0];
+                }
+            }
 
             List<CSharpFile> cSharpFiles = Directory
                 .GetFiles(directory, "*.cs", SearchOption.AllDirectories)
@@ -27,15 +39,17 @@ namespace CSharpFilesMerger
                 .ToList();
 
             List<string> usings = new List<string>();
-
-            string mergedFile = string.Empty;
+            Dictionary<string, MergedNamespace> Namespaces = new Dictionary<string, MergedNamespace>();
 
             cSharpFiles.ForEach(file =>
             {
-                usings = usings.Union(file.Usings).ToList();
-            });
+                file.Namespaces.ForEach(ns =>
+                {
+                    MergedNamespace mergedNamespace = Namespaces.ContainsKey(ns.Name) ? Namespaces[ns.Name] : new MergedNamespace();
 
-            mergedFile = string.Join("\r\n", usings.OrderBy(u => u).Select(u => $"using {u};")) + "\r\n\r\n" + mergedFile;
+
+                });
+            });
         }
     }
 }
