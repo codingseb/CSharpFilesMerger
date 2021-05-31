@@ -35,10 +35,27 @@ namespace CSharpFilesMerger
             string directory = Directory.GetCurrentDirectory();
             bool recurcive = false;
             string outputFileName = "Merged.cs";
+            UsingsLocation usingsLocation = UsingsLocation.DoNotMove;
 
             #endregion
 
             #region Decode args
+
+            #region Help (Exclusive)
+
+            if(args.Contains("-h", StringComparer.OrdinalIgnoreCase) || args.Contains("--help", StringComparer.OrdinalIgnoreCase))
+            {
+                Help.PrintHelp();
+                if (args.Contains("-w"))
+                {
+                    Console.WriteLine(string.Empty);
+                    Console.WriteLine("Press a key to exit...");
+                    Console.ReadLine();
+                }
+                return;
+            }
+
+            #endregion
 
             #region Working directory
 
@@ -89,6 +106,17 @@ namespace CSharpFilesMerger
 
             #endregion
 
+            #region Usings location
+
+            int usingsIndex = args.ToList().IndexOf("-u");
+
+            if (usingsIndex > -1 && usingsIndex < args.Length)
+            {
+                usingsLocation = (UsingsLocation)Enum.Parse(typeof(UsingsLocation), args[usingsIndex + 1], true);
+            }
+
+            #endregion
+
             #endregion
 
             #region Parse files
@@ -130,12 +158,21 @@ namespace CSharpFilesMerger
                 Console.WriteLine(string.Empty);
                 Console.WriteLine($"Merge file : \"{file.FileName}\"");
 
-                usings = usings.Union(file.Usings).ToList();
+                if(usingsLocation != UsingsLocation.Namespace)
+                    usings = usings.Union(file.Usings).ToList();
 
                 file.Namespaces.ForEach(ns =>
                 {
                     Console.WriteLine($"Merge namespace : \"{ns.Name}\"");
                     MergedNamespace mergedNamespace = Namespaces.ContainsKey(ns.Name) ? Namespaces[ns.Name] : new MergedNamespace() { Name = ns.Name };
+
+                    if (usingsLocation == UsingsLocation.Global)
+                        usings = usings.Union(ns.Usings).ToList();
+                    else
+                        mergedNamespace.Usings = mergedNamespace.Usings.Union(ns.Usings).ToList();
+
+                    if (usingsLocation == UsingsLocation.Namespace)
+                        mergedNamespace.Usings = mergedNamespace.Usings.Union(file.Usings).ToList();
 
                     if (ns.Comment.Length > mergedNamespace.Comment.Length)
                         mergedNamespace.Comment = ns.Comment;

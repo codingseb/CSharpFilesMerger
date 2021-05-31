@@ -50,12 +50,14 @@
   <ItemGroup>
     <Compile Include="BlockParser.cs" />
     <Compile Include="CSharpFile.cs" />
+    <Compile Include="Help.cs" />
     <Compile Include="MergedNamespace.cs" />
     <Compile Include="MergedTypeElement.cs" />
     <Compile Include="Namespace.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TypeElement.cs" />
+    <Compile Include="UsingsLocation.cs" />
     <Compile Include="UsingsParser.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
