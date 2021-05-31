@@ -68,13 +68,13 @@ namespace CSharpFilesMerger
 
             #region Search files recursively ?
 
-            recurcive = args.Contains("-r");
+            recurcive = args.Contains("-r", StringComparer.OrdinalIgnoreCase) || args.Contains("--recursive", StringComparer.OrdinalIgnoreCase);
 
             #endregion
 
             #region listOfFiles
 
-            int listIndex = args.ToList().IndexOf("-l");
+            int listIndex = args.ToList().FindIndex(a => a.Equals("-f", StringComparison.OrdinalIgnoreCase) || a.Equals("--files", StringComparison.OrdinalIgnoreCase));
 
             if (listIndex > -1 && listIndex < args.Length)
             {
@@ -247,5 +247,3 @@ namespace CSharpFilesMerger
         }
     }
 }
-
-// End
