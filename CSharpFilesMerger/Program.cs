@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -25,6 +26,7 @@ namespace CSharpFilesMerger
             IEnumerable<string> cSharpFileNames;
             List<CSharpFile> cSharpFiles;
             Dictionary<string, MergedNamespace> Namespaces = new Dictionary<string, MergedNamespace>();
+            Dictionary<string, MergedTypeElement> typeElements = new Dictionary<string, MergedTypeElement>();
             string mergedFileContent = string.Empty;
 
             string directory = Directory.GetCurrentDirectory();
@@ -103,6 +105,22 @@ namespace CSharpFilesMerger
 
             #region Merge Files to Merged Structure
 
+            void MergeTypeElement(TypeElement typeElement, Dictionary<string,MergedTypeElement> mergedTypeElements, string context)
+            {
+                Console.WriteLine($"Merge type : \"{typeElement.Name}\"{context}");
+                MergedTypeElement mergedTypeElement = mergedTypeElements.ContainsKey(typeElement.Name) ? mergedTypeElements[typeElement.Name] : new MergedTypeElement();
+
+                if (typeElement.Comment.Length > mergedTypeElement.Comment.Length)
+                    mergedTypeElement.Comment = typeElement.Comment;
+
+                if (typeElement.Declaration.Length > mergedTypeElement.Declaration.Length)
+                    mergedTypeElement.Declaration = typeElement.Declaration;
+
+                mergedTypeElement.Content += typeElement.Content;
+
+                mergedTypeElements[typeElement.Name] = mergedTypeElement;
+            }
+
             cSharpFiles.ForEach(file =>
             {
                 Console.WriteLine(string.Empty);
@@ -116,24 +134,12 @@ namespace CSharpFilesMerger
                     if(ns.Comment.Length > mergedNamespace.Comment.Length)
                         mergedNamespace.Comment = ns.Comment;
 
-                    ns.Elements.ForEach(typeElement =>
-                    {
-                        Console.WriteLine($"Merge type : \"{typeElement.Name}\"");
-                        MergedTypeElement mergedTypeElement = mergedNamespace.Elements.ContainsKey(typeElement.Name) ? mergedNamespace.Elements[typeElement.Name] : new MergedTypeElement();
-
-                        if (typeElement.Comment.Length > mergedTypeElement.Comment.Length)
-                            mergedTypeElement.Comment = typeElement.Comment;
-
-                        if (typeElement.Declaration.Length > mergedTypeElement.Declaration.Length)
-                            mergedTypeElement.Declaration = typeElement.Declaration;
-
-                        mergedTypeElement.Content += typeElement.Content;
-
-                        mergedNamespace.Elements[typeElement.Name] = mergedTypeElement;
-                    });
+                    ns.Elements.ForEach(typeElement => MergeTypeElement(typeElement, mergedNamespace.Elements, $" of namespace \"{ns.Name}\""));
 
                     Namespaces[ns.Name] = mergedNamespace;
                 });
+
+                file.Elements.ForEach(typeElement => MergeTypeElement(typeElement, typeElements, $" orphan element"));
             });
 
             #endregion
@@ -152,6 +158,10 @@ namespace CSharpFilesMerger
                 mergedFileContent += $"{mergedNamespace.Comment}\r\nnamespace {mergedNamespace.Name}\r\n{{{content}\r\n}}\r\n";
             });
 
+            mergedFileContent += string.Join("\r\n",
+                    typeElements.Values.ToList()
+                        .Select(mergedTypeElement => $"{mergedTypeElement.Comment}\r\n{mergedTypeElement.Declaration}{mergedTypeElement.Content}}}"));
+
             //mergedFileContent = string.Join("\r\n", usings.OrderBy(u => u).Select(u => $"using {u};")) + "\r\n\r\n" + mergedFileContent;
 
             #endregion
@@ -164,7 +174,19 @@ namespace CSharpFilesMerger
 
             #endregion
 
-            Console.ReadLine();
+            int startIndex = args.ToList().IndexOf("-s");
+
+            if (startIndex > -1 && startIndex < args.Length && !args[startIndex + 1].StartsWith("-"))
+            {
+                Process.Start(args[startIndex + 1], $"\"{outputFileName}\"");
+            }
+            else
+            {
+                Process.Start(outputFileName);
+            }
+
+            if (args.Contains("-w"))
+                Console.ReadLine();
         }
     }
 }

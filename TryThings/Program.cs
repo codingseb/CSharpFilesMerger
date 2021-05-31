@@ -33,3 +33,11 @@ namespace TryThings.Process
         }
     }
 }
+
+public class Orphan
+{
+    public void MyMethod()
+    {
+        // Content
+    }
+}
