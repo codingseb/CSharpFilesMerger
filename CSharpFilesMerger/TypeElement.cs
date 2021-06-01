@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace CSharpFilesMerger
@@ -37,7 +38,7 @@ namespace CSharpFilesMerger
                     Comment = match.Groups["comment"].Value.TrimStart('\r', '\n'),
                     Name = match.Groups["name"].Value,
                     Declaration = match.Groups["declaration"].Value.TrimStart('\r', '\n'),
-                    Content = BlockParser.ParseBetweenImbricableBrackets(code, ref i)
+                    Content = BlockParser.ParseBetweenImbricableBrackets(code, ref i, new StringBuilder()).ToString()
                 });
 
                 code = code.Remove(match.Index, i - match.Index + 1);

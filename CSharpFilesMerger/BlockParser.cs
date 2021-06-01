@@ -32,9 +32,8 @@ namespace CSharpFilesMerger
             { "[", "]" },
         };
 
-        public static string ParseBetweenImbricableBrackets(string code, ref int i, string startToken = "{", string endToken = "}")
+        public static StringBuilder ParseBetweenImbricableBrackets(string code, ref int i, StringBuilder contentCode, string startToken = "{", string endToken = "}")
         {
-            StringBuilder contentCode = new StringBuilder(string.Empty);
             int bracketCount = 1;
             for (; i < code.Length; i++)
             {
@@ -81,7 +80,9 @@ namespace CSharpFilesMerger
                     {
                         i += openingBracket.Length;
                         string closingBrackets = ImbricableBracketsPairing[openingBracket];
-                        contentCode.Append(openingBracket).Append(ParseBetweenImbricableBrackets(code, ref i, openingBracket, closingBrackets)).Append(closingBrackets);
+                        contentCode.Append(openingBracket);
+                        ParseBetweenImbricableBrackets(code, ref i, contentCode, openingBracket, closingBrackets);
+                        contentCode.Append(closingBrackets);
                         continue;
                     }
 
@@ -103,7 +104,7 @@ namespace CSharpFilesMerger
                 throw new Exception($"{bracketCount} '{endToken}' character {beVerb} missing in expression : [{code}]");
             }
 
-            return contentCode.ToString();
+            return contentCode;
         }
 
         private static string GetCodeUntilEndOfString(string subExpr, Match stringBeginningMatch)

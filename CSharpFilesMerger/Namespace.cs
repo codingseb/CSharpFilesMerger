@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace CSharpFilesMerger
@@ -35,7 +36,7 @@ namespace CSharpFilesMerger
             {
                 int i = match.Index + match.Length;
 
-                string content = BlockParser.ParseBetweenImbricableBrackets(code, ref i);
+                string content = BlockParser.ParseBetweenImbricableBrackets(code, ref i, new StringBuilder()).ToString();
 
                 var @namespace = new Namespace
                 {
