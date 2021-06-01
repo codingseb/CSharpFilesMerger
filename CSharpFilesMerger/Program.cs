@@ -95,7 +95,7 @@ namespace CSharpFilesMerger
 
                 int listIndex = args.ToList().FindIndex(a => a.Equals("-f", StringComparison.OrdinalIgnoreCase) || a.Equals("--files", StringComparison.OrdinalIgnoreCase));
 
-                if (listIndex > -1 && listIndex < args.Length - 2)
+                if (listIndex > -1 && listIndex < args.Length - 1)
                 {
                     cSharpFileNames = args[listIndex + 1].Split(';')
                         .Select(fileName => Path.GetFullPath(Path.IsPathRooted(fileName) ? fileName : Path.Combine(directory, fileName)));
@@ -113,7 +113,7 @@ namespace CSharpFilesMerger
 
                 int outputIndex = args.ToList().FindIndex(a => a.Equals("-o", StringComparison.OrdinalIgnoreCase) || a.Equals("--out", StringComparison.OrdinalIgnoreCase));
 
-                if (outputIndex > -1 && outputIndex < args.Length - 2)
+                if (outputIndex > -1 && outputIndex < args.Length - 1)
                 {
                     outputFileName = args[outputIndex + 1];
                 }
@@ -129,7 +129,7 @@ namespace CSharpFilesMerger
 
                 int usingsIndex = args.ToList().FindIndex(a => a.Equals("-u", StringComparison.OrdinalIgnoreCase) || a.Equals("--usings", StringComparison.OrdinalIgnoreCase));
 
-                if (usingsIndex > -1 && usingsIndex < args.Length - 2)
+                if (usingsIndex > -1 && usingsIndex < args.Length - 1)
                 {
                     usingsLocation = (UsingsLocation)Enum.Parse(typeof(UsingsLocation), args[usingsIndex + 1], true);
                 }
@@ -246,7 +246,7 @@ namespace CSharpFilesMerger
 
                 if (startIndex > -1)
                 {
-                    if (startIndex < args.Length - 2 && !args[startIndex + 1].StartsWith("-"))
+                    if (startIndex < args.Length - 1 && !args[startIndex + 1].StartsWith("-"))
                     {
                         Console.WriteLine(string.Empty);
                         Console.WriteLine($"start {args[startIndex + 1]} \"{outputFileName}\"");
