@@ -81,7 +81,7 @@ namespace CSharpFilesMerger
                     {
                         i += openingBracket.Length;
                         string closingBrackets = ImbricableBracketsPairing[openingBracket];
-                        contentCode.Append(openingBracket + ParseBetweenImbricableBrackets(code, ref i, openingBracket, closingBrackets) + closingBrackets);
+                        contentCode.Append(openingBracket).Append(ParseBetweenImbricableBrackets(code, ref i, openingBracket, closingBrackets)).Append(closingBrackets);
                         continue;
                     }
 
@@ -92,7 +92,7 @@ namespace CSharpFilesMerger
                     }
                     else
                     {
-                        contentCode.Append(code.Substring(i, 1));
+                        contentCode.Append(code, i, 1);
                     }
                 }
             }
