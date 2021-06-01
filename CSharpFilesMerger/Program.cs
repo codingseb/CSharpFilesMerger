@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace CSharpFilesMerger
@@ -22,7 +23,8 @@ namespace CSharpFilesMerger
             List<string> ignoreFile = new List<string>()
             {
                 @"\\Properties\\",
-                @"\\obj\\"
+                @"\\obj\\",
+                @"\\Merged.cs"
             };
 
             List<string> usings = new List<string>();
@@ -34,24 +36,39 @@ namespace CSharpFilesMerger
 
             string directory = Directory.GetCurrentDirectory();
             bool recurcive = false;
+            bool waitAtTheEnd = false;
             string outputFileName = "Merged.cs";
             UsingsLocation usingsLocation = UsingsLocation.DoNotMove;
 
             #endregion
 
-            #region Decode args
+            #region Decode others args
+
+            #region Wait at the end
+
+            waitAtTheEnd = args.Contains("-w", StringComparer.OrdinalIgnoreCase) || args.Contains("--wait", StringComparer.OrdinalIgnoreCase);
+
+            #endregion
 
             #region Help (Exclusive)
 
-            if(args.Contains("-h", StringComparer.OrdinalIgnoreCase) || args.Contains("--help", StringComparer.OrdinalIgnoreCase))
+            if (args.Contains("-h", StringComparer.OrdinalIgnoreCase) || args.Contains("--help", StringComparer.OrdinalIgnoreCase))
             {
                 Help.PrintHelp();
-                if (args.Contains("-w"))
-                {
-                    Console.WriteLine(string.Empty);
-                    Console.WriteLine("Press a key to exit...");
-                    Console.ReadLine();
-                }
+                if (waitAtTheEnd)
+                    WaitAKey();
+                return;
+            }
+
+            #endregion
+
+            #region Show version (Exclusive)
+
+            if (args.Contains("-v", StringComparer.OrdinalIgnoreCase) || args.Contains("--version", StringComparer.OrdinalIgnoreCase))
+            {
+                Console.WriteLine(Assembly.GetExecutingAssembly().GetName().Version.ToString());
+                if (waitAtTheEnd)
+                    WaitAKey();
                 return;
             }
 
@@ -59,7 +76,7 @@ namespace CSharpFilesMerger
 
             #region Working directory
 
-            if (args.Length > 0 && !args[0].StartsWith("-"))
+                if (args.Length > 0 && !args[0].StartsWith("-"))
             {
                 directory = Path.GetFullPath(Path.IsPathRooted(args[0]) ? args[0] : Path.Combine(directory, args[0]));
             }
@@ -76,7 +93,7 @@ namespace CSharpFilesMerger
 
             int listIndex = args.ToList().FindIndex(a => a.Equals("-f", StringComparison.OrdinalIgnoreCase) || a.Equals("--files", StringComparison.OrdinalIgnoreCase));
 
-            if (listIndex > -1 && listIndex < args.Length)
+            if (listIndex > -1 && listIndex < args.Length - 2)
             {
                 cSharpFileNames = args[listIndex + 1].Split(';')
                     .Select(fileName => Path.GetFullPath(Path.IsPathRooted(fileName) ? fileName : Path.Combine(directory, fileName)));
@@ -92,9 +109,9 @@ namespace CSharpFilesMerger
 
             #region Output fileName
 
-            int outputIndex = args.ToList().IndexOf("-o");
+            int outputIndex = args.ToList().FindIndex(a => a.Equals("-o", StringComparison.OrdinalIgnoreCase) || a.Equals("--out", StringComparison.OrdinalIgnoreCase));
 
-            if (outputIndex > -1 && outputIndex < args.Length)
+            if (outputIndex > -1 && outputIndex < args.Length - 2)
             {
                 outputFileName = args[outputIndex + 1];
             }
@@ -108,9 +125,9 @@ namespace CSharpFilesMerger
 
             #region Usings location
 
-            int usingsIndex = args.ToList().IndexOf("-u");
+            int usingsIndex = args.ToList().FindIndex(a => a.Equals("-u", StringComparison.OrdinalIgnoreCase) || a.Equals("--usings", StringComparison.OrdinalIgnoreCase));
 
-            if (usingsIndex > -1 && usingsIndex < args.Length)
+            if (usingsIndex > -1 && usingsIndex < args.Length - 2)
             {
                 usingsLocation = (UsingsLocation)Enum.Parse(typeof(UsingsLocation), args[usingsIndex + 1], true);
             }
@@ -196,7 +213,9 @@ namespace CSharpFilesMerger
 
             Namespaces.Values.ToList().ForEach(mergedNamespace =>
             {
-                string content = string.Join("\r\n\r\n",
+                string content = mergedNamespace.Usings.Count > 0 ? string.Join("\r\n", mergedNamespace.Usings.OrderBy(u => u).Select(u => $"    using {u};")) + "\r\n\r\n" : string.Empty;
+
+                content += string.Join("\r\n\r\n",
                     mergedNamespace.Elements.Values.ToList()
                         .Select(mergedTypeElement => $"{mergedTypeElement.Comment}{mergedTypeElement.Declaration}{mergedTypeElement.Content}}}"));
 
@@ -221,29 +240,35 @@ namespace CSharpFilesMerger
 
             #region What to do at the end
 
-            int startIndex = args.ToList().IndexOf("-s");
+            int startIndex = args.ToList().FindIndex(a => a.Equals("-s", StringComparison.OrdinalIgnoreCase) || a.Equals("--start", StringComparison.OrdinalIgnoreCase));
 
-            if (startIndex > -1 && startIndex < args.Length && !args[startIndex + 1].StartsWith("-"))
+            if (startIndex > -1)
             {
-                Console.WriteLine(string.Empty);
-                Console.WriteLine($"start {args[startIndex + 1]} \"{outputFileName}\"");
-                Process.Start(args[startIndex + 1], $"\"{outputFileName}\"");
-            }
-            else
-            {
-                Console.WriteLine(string.Empty);
-                Console.WriteLine($"start \"{outputFileName}\"");
-                Process.Start(outputFileName);
+                if (startIndex < args.Length - 2 && !args[startIndex + 1].StartsWith("-"))
+                {
+                    Console.WriteLine(string.Empty);
+                    Console.WriteLine($"start {args[startIndex + 1]} \"{outputFileName}\"");
+                    Process.Start(args[startIndex + 1], $"\"{outputFileName}\"");
+                }
+                else
+                {
+                    Console.WriteLine(string.Empty);
+                    Console.WriteLine($"start \"{outputFileName}\"");
+                    Process.Start(outputFileName);
+                }
             }
 
-            if (args.Contains("-w"))
-            {
-                Console.WriteLine(string.Empty);
-                Console.WriteLine("Press a key to exit...");
-                Console.ReadLine();
-            }
+            if (waitAtTheEnd)
+                WaitAKey();
 
             #endregion
+        }
+
+        private static void WaitAKey()
+        {
+            Console.WriteLine(string.Empty);
+            Console.WriteLine("Press a key to exit...");
+            Console.ReadLine();
         }
     }
 }
