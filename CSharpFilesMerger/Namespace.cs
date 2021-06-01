@@ -49,7 +49,10 @@ namespace CSharpFilesMerger
 
                 if (!string.IsNullOrWhiteSpace(content))
                 {
+                    ConsoleColor color = Console.ForegroundColor;
+                    Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine($"!!! WARNING !!! there is always some not parsed code in namespace {@namespace.Name} :");
+                    Console.ForegroundColor = color;
                     Console.WriteLine("---------------------------------------------------------------------------------------"); 
                     Console.WriteLine(content.Trim());
                     Console.WriteLine("---------------------------------------------------------------------------------------");

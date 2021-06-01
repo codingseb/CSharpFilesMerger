@@ -25,7 +25,7 @@ namespace CSharpFilesMerger
             Console.WriteLine("OPTIONS:");
             Console.WriteLine("".PadRight(left) + "-h, --help".PadRight(right) + "Show this help text (is exclusive with others options except -w)");
             Console.WriteLine("");
-            Console.WriteLine("".PadRight(left) + "-v, --version".PadRight(right) + "Show the verison of the application (is exclusive with others options except -w)");
+            Console.WriteLine("".PadRight(left) + "-v, --version".PadRight(right) + "Show the version of the application (is exclusive with others options except -w)");
             Console.WriteLine("");
             Console.WriteLine("".PadRight(left) + "-r, --recursive".PadRight(right) + "Search for *.cs file recursively from working directory or specified directory.");
             Console.WriteLine("".PadRight(left + right) + "Do not work with -f, --files");

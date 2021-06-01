@@ -30,7 +30,10 @@ namespace CSharpFilesMerger
 
             if (!string.IsNullOrWhiteSpace(code))
             {
+                ConsoleColor color = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine($"!!! WARNING !!! there is always some not parsed code in file \"{FileName}\" :");
+                Console.ForegroundColor = color;
                 Console.WriteLine("---------------------------------------------------------------------------------------");
                 Console.WriteLine(code.Trim());
                 Console.WriteLine("---------------------------------------------------------------------------------------");
