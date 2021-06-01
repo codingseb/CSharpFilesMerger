@@ -23,6 +23,8 @@ namespace CSharpFilesMerger
         private static readonly Regex lineCommentRegex = new Regex(@"^//[^\r\n]*", RegexOptions.Compiled);
         private static readonly Regex blockCommentRegex = new Regex(@"^/\*(.*?)\*/", RegexOptions.Compiled);
 
+        private static readonly Regex sameContextCharsRegex = new Regex("^[^\"'\\\\@$/()\\[\\]\\{\\}]+", RegexOptions.Compiled);
+
         private static IDictionary<string, string> ImbricableBracketsPairing { get; } = new Dictionary<string, string>()
         {
             { "(", ")" },
@@ -32,7 +34,7 @@ namespace CSharpFilesMerger
 
         public static string ParseBetweenImbricableBrackets(string code, ref int i, string startToken = "{", string endToken = "}")
         {
-            string contentCode = string.Empty;
+            StringBuilder contentCode = new StringBuilder(string.Empty);
             int bracketCount = 1;
             for (; i < code.Length; i++)
             {
@@ -42,14 +44,14 @@ namespace CSharpFilesMerger
                 if ((match = stringBeginningRegex.Match(subExpr)).Success)
                 {
                     string innerString = match.Value + GetCodeUntilEndOfString(code.Substring(i + match.Length), match);
-                    contentCode += innerString;
+                    contentCode.Append(innerString);
                     i += innerString.Length - 1;
                 }
                 else if ((match = internalCharRegex.Match(subExpr)).Success
                     || (match = lineCommentRegex.Match(subExpr)).Success
                     || (match = blockCommentRegex.Match(subExpr)).Success)
                 {
-                    contentCode += match.Value;
+                    contentCode.Append(match.Value);
                     i += match.Length - 1;
                 }
                 else
@@ -68,7 +70,7 @@ namespace CSharpFilesMerger
                     {
                         bracketCount++;
                         i += startToken.Length - 1;
-                        contentCode += startToken;
+                        contentCode.Append(startToken);
                         continue;
                     }
 
@@ -79,13 +81,19 @@ namespace CSharpFilesMerger
                     {
                         i += openingBracket.Length;
                         string closingBrackets = ImbricableBracketsPairing[openingBracket];
-                        contentCode += openingBracket + ParseBetweenImbricableBrackets(code, ref i, openingBracket, closingBrackets) + closingBrackets;
+                        contentCode.Append(openingBracket + ParseBetweenImbricableBrackets(code, ref i, openingBracket, closingBrackets) + closingBrackets);
                         continue;
                     }
 
-                    subExpr = code.Substring(i);
-
-                    contentCode += code.Substring(i, 1);
+                    if ((match = sameContextCharsRegex.Match(subExpr)).Success)
+                    {
+                        contentCode.Append(match.Value);
+                        i += match.Length - 1;
+                    }
+                    else
+                    {
+                        contentCode.Append(code.Substring(i, 1));
+                    }
                 }
             }
 
@@ -95,7 +103,7 @@ namespace CSharpFilesMerger
                 throw new Exception($"{bracketCount} '{endToken}' character {beVerb} missing in expression : [{code}]");
             }
 
-            return contentCode;
+            return contentCode.ToString();
         }
 
         private static string GetCodeUntilEndOfString(string subExpr, Match stringBeginningMatch)

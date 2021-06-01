@@ -146,9 +146,13 @@ namespace CSharpFilesMerger
 
                 cSharpFiles = cSharpFileNames
                     .Select(fileName =>
-                    {
+                    { 
                         Console.WriteLine($"Parse file : \"{fileName}\"");
-                        return new CSharpFile(fileName);
+                        var start = DateTime.Now;
+                        var file = new CSharpFile(fileName);
+                        var end = DateTime.Now;
+                        Console.WriteLine($"File parsed in {end - start}");
+                        return file;
                     })
                     .ToList();
 

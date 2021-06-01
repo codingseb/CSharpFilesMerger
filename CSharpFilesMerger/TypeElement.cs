@@ -8,7 +8,7 @@ namespace CSharpFilesMerger
     /// </summary>
     public class TypeElement
     {
-        private static readonly Regex elementsRegex = new Regex(@"(?<=^|\r|\n)(?<comment>(?m:(^(?>\s*)//.*$[\r\n])*))?(?<declaration>(?>\s*)((?<modifiers>private|protected|internal|public|new|abstract|sealed|static|partial)(?>\s+))*((?<elementtype>class|struct|enum|interface)(?>\s+))(?<name>[\p{L}_][\p{L}_0-9]*)(?>\s*)(?<isgeneric>[<](?>([\p{L}_](?>[\p{L}_0-9]*)|(?>\s+)|[,\.])+|(?<gentag>[<])|(?<-gentag>[>]))*(?(gentag)(?!))[>](?>\s*))?(?<inherit>:(?>\s*)[\p{L}_][\p{L}_0-9]*(?>\s*)(,(?>\s*)[\p{L}_][\p{L}_0-9]*(?>\s*))*)?\{)", RegexOptions.Compiled);
+        private static readonly Regex elementsRegex = new Regex(@"(?<=^|\r|\n)(?<comment>(?m:(^(?>\s*)//.*$[\r\n])*))?(?<declaration>(?>\s*)((?<modifiers>private|protected|internal|public|new|abstract|sealed|static|partial)(?>\s+))*((?<elementtype>class|struct|enum|interface)(?>\s+))(?<name>[\p{L}_][\p{L}_0-9]*)(?>\s*)(?<isgeneric>[<](?>([\p{L}_](?>[\p{L}_0-9]*)|(?>\s+)|[,\.])+|(?<gentag>[<])|(?<-gentag>[>]))*(?(gentag)(?!))[>](?>\s*))?(?<inherit>:(?>\s*)[\p{L}_][\p{L}_0-9]*(?>\s*)(?<isgeneric>[<](?>([\p{L}_](?>[\p{L}_0-9]*)|(?>\s+)|[,\.])+|(?<gentag>[<])|(?<-gentag>[>]))*(?(gentag)(?!))[>](?>\s*))?(,(?>\s*)[\p{L}_][\p{L}_0-9]*(?>\s*)(?<isgeneric>[<](?>([\p{L}_](?>[\p{L}_0-9]*)|(?>\s+)|[,\.])+|(?<gentag>[<])|(?<-gentag>[>]))*(?(gentag)(?!))[>](?>\s*))?)*)?\{)", RegexOptions.Compiled);
 
         public string Comment { get; private set; }
 
