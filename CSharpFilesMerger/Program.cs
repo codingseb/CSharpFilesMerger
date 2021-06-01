@@ -146,12 +146,12 @@ namespace CSharpFilesMerger
 
                 cSharpFiles = cSharpFileNames
                     .Select(fileName =>
-                    { 
+                    {
                         Console.WriteLine($"Parse file : \"{fileName}\"");
-                        var start = DateTime.Now;
+                        Stopwatch sw = Stopwatch.StartNew();
                         var file = new CSharpFile(fileName);
-                        var end = DateTime.Now;
-                        Console.WriteLine($"File parsed in {end - start}");
+                        sw.Stop();
+                        Console.WriteLine("File parsed in {0}", sw.Elapsed);
                         return file;
                     })
                     .ToList();
