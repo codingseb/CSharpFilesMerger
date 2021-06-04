@@ -2,15 +2,12 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp3.1;net4</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
     <Authors>Coding Seb</Authors>
     <Description>A command line utility to merge multiple C# file (*.cs) into one
 
-
 * Scan a directory or give a list of files
-
 * Multiple way to manage `using`
-
 * Merge `partial class` in one class
  Ignore `*\obj\*`, `*\Properties\*` and `*\Merge.cs`
 </Description>

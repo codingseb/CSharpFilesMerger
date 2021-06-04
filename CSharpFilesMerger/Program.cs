@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 
 namespace CSharpFilesMerger
 {
@@ -22,9 +21,8 @@ namespace CSharpFilesMerger
 
             List<string> ignoreFile = new List<string>()
             {
-                @"\\Properties\\",
-                @"\\obj\\",
-                @"\\Merged.cs"
+                @"\Properties\",
+                @"\obj\",
             };
 
             List<string> usings = new List<string>();
@@ -104,7 +102,7 @@ namespace CSharpFilesMerger
                 {
                     cSharpFileNames = Directory
                         .GetFiles(directory, "*.cs", recurcive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
-                        .Where(fileName => !ignoreFile.Any(pattern => Regex.IsMatch(fileName, pattern, RegexOptions.IgnoreCase)));
+                        .Where(fileName => !ignoreFile.Any(pattern => fileName.Contains(pattern, StringComparison.OrdinalIgnoreCase)));
                 }
 
                 #endregion
@@ -122,6 +120,8 @@ namespace CSharpFilesMerger
                 {
                     outputFileName = Path.GetFullPath(Path.Combine(directory, outputFileName));
                 }
+
+                ignoreFile.Add(outputFileName);
 
                 #endregion
 
@@ -159,22 +159,6 @@ namespace CSharpFilesMerger
                 #endregion
 
                 #region Merge Files to Merged Structure
-
-                void MergeTypeElement(TypeElement typeElement, Dictionary<string, MergedTypeElement> mergedTypeElements, string context)
-                {
-                    Console.WriteLine($"Merge type : \"{typeElement.Name}\" {context}");
-                    MergedTypeElement mergedTypeElement = mergedTypeElements.ContainsKey(typeElement.Name) ? mergedTypeElements[typeElement.Name] : new MergedTypeElement();
-
-                    if (typeElement.Comment.Length > mergedTypeElement.Comment.Length)
-                        mergedTypeElement.Comment = typeElement.Comment;
-
-                    if (typeElement.Declaration.Length > mergedTypeElement.Declaration.Length)
-                        mergedTypeElement.Declaration = typeElement.Declaration;
-
-                    mergedTypeElement.Content += typeElement.Content;
-
-                    mergedTypeElements[typeElement.Name] = mergedTypeElement;
-                }
 
                 cSharpFiles.ForEach(file =>
                 {
@@ -260,7 +244,7 @@ namespace CSharpFilesMerger
                     {
                         Console.WriteLine(string.Empty);
                         Console.WriteLine($"start \"{outputFileName}\"");
-                        Process.Start(outputFileName);
+                        Process.Start("notepad", $"\"{outputFileName}\"");
                     }
                 }
 
@@ -273,6 +257,7 @@ namespace CSharpFilesMerger
             }
             catch(Exception exception)
             {
+                #region exception management
                 ConsoleColor color = Console.ForegroundColor;
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("!!! ERROR !!!");
@@ -280,6 +265,8 @@ namespace CSharpFilesMerger
                 Console.ForegroundColor = color;
                 if (waitAtTheEnd)
                     WaitAKey();
+
+                #endregion
                 return 1;
             }
         }
@@ -289,6 +276,22 @@ namespace CSharpFilesMerger
             Console.WriteLine(string.Empty);
             Console.WriteLine("Press a key to exit...");
             Console.ReadLine();
+        }
+
+        private static void MergeTypeElement(TypeElement typeElement, Dictionary<string, MergedTypeElement> mergedTypeElements, string context)
+        {
+            Console.WriteLine($"Merge type : \"{typeElement.Name}\" {context}");
+            MergedTypeElement mergedTypeElement = mergedTypeElements.ContainsKey(typeElement.Name) ? mergedTypeElements[typeElement.Name] : new MergedTypeElement();
+
+            if (typeElement.Comment.Length > mergedTypeElement.Comment.Length)
+                mergedTypeElement.Comment = typeElement.Comment;
+
+            if (typeElement.Declaration.Length > mergedTypeElement.Declaration.Length)
+                mergedTypeElement.Declaration = typeElement.Declaration;
+
+            mergedTypeElement.Content += typeElement.Content;
+
+            mergedTypeElements[typeElement.Name] = mergedTypeElement;
         }
     }
 }
